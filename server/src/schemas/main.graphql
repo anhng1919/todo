@@ -3,12 +3,18 @@ type Query {
   tasks: [Task]
 }
 
+# datetime type
+scalar DateTime
+
 type Task {
   # unique id
-  uuid: String
+  uuid: ID
 
   # task name
   name: String
+
+  # task created time
+  createdAt: DateTime
 }
 
 
