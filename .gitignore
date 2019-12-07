@@ -6,6 +6,10 @@ server/watch.log
 server/yarn.lock
 server/yarn-error.log
 
+client/build
+client/yarn.lock
+client/yarn-error.log
+
 node_modules
 
 # Cruft
