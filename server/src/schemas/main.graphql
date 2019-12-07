@@ -1,0 +1,23 @@
+type Query {
+  # return task list
+  tasks: [Task]
+}
+
+type Task {
+  # unique id
+  uuid: String
+
+  # task name
+  name: String
+}
+
+
+ type Mutation {
+   # write a new task to storage
+   writeANewTask(name: String): Boolean
+ }
+
+ type Subscription {
+   # trigger event when task was noted
+   taskWasNoted: Task
+ }
