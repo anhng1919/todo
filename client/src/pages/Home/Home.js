@@ -18,6 +18,8 @@ import gql from 'graphql-tag';
 import {formatRelative} from 'date-fns';
 import Divider from '@material-ui/core/Divider';
 import produce from 'immer';
+import emptyIcon from '../../images/empty.png';
+import {Code} from 'react-content-loader'
 
 const useStyles = makeStyles(theme => ({
   barRoot: {
@@ -84,6 +86,10 @@ const useStyles = makeStyles(theme => ({
     bottom: theme.spacing(2),
     right: theme.spacing(2),
   },
+
+  loadingRoot: {
+    margin: theme.spacing(3),
+  }
 }))
 
 const TASKS_QUERY = gql`
@@ -141,7 +147,7 @@ export default function SearchAppBar() {
   //   })
   // }
 
-  const [tasks, dispatch] = useReducer(taskReducer, [])
+  const [tasks, dispatch] = useReducer(taskReducer, [0])
 
   useQuery(TASKS_QUERY, {
       fetchPolicy: 'network-only',
@@ -204,7 +210,7 @@ export default function SearchAppBar() {
         </AppBar>
       </div>
 
-      {(tasks !== null) ?
+      {(tasks[0] !== 0) ?
         (tasks.length > 0 ?
             (
               <List className={classes.listRoot}>
@@ -224,12 +230,14 @@ export default function SearchAppBar() {
             )
             :
             (
-              <div>empty</div>
+              <div><img src={emptyIcon} width={'100%'} /></div>
             )
         )
         :
         (
-          <div>Loading</div>
+          <div className={classes.loadingRoot}>
+            <Code />
+          </div>
         )
       }
 
