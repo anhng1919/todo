@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "todo graphql",
   "scripts": {
-    "start": "cd server ; yarn build ; cd .. ; cd client ; yarn build ; cd .. ; cp -rv client/build server/build/public ; PUBLIC_PATH=server/build/public node server/build"
+    "start": "cd server ; yarn ; yarn build ; cd .. ; cd client ; yarn ; yarn build ; cd .. ; cp -rv client/build server/build/public ; PUBLIC_PATH=server/build/public node server/build"
   },
   "repository": {
     "type": "git",
