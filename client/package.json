@@ -16,7 +16,7 @@
     "graphql-tag": "^2.10.1",
     "immer": "^5.0.0",
     "react": "^16.12.0",
-    "react-animated-navigator": "^1.0.32",
+    "react-animated-navigator": "^1.0.38",
     "react-content-loader": "^4.3.3",
     "react-dom": "^16.12.0",
     "react-router": "^5.1.2",

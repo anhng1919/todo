@@ -15,5 +15,8 @@
   "bugs": {
     "url": ""
   },
-  "homepage": ""
+  "homepage": "",
+  "dependencies": {
+    "react-animated-navigator": "^1.0.38"
+  }
 }
