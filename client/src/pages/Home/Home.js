@@ -163,6 +163,13 @@ const taskReducer = (state, action) => {
 
                 setTimeout(() => {
                   content.style.transform = 'translateX(0px)'
+
+                  setTimeout(() => {
+                    leftHint.style.transition = rightHint.style.transition = content.style.transition = ''
+                    leftHint.style.opacity = 0
+                    rightHint.style.opacity = 0
+                  }, 500)
+
                 }, 1000)
 
               }, 500)
