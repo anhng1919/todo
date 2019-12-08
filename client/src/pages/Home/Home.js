@@ -7,19 +7,28 @@ import InputBase from '@material-ui/core/InputBase';
 import {fade, makeStyles} from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
+import DoneIcon from '@material-ui/icons/Done';
+import DeleteIcon from '@material-ui/icons/Delete';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
-import {useNavigator, SharedElement} from 'react-animated-navigator';
+import {useNavigator} from 'react-animated-navigator';
 import {useQuery, useSubscription} from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import {formatRelative} from 'date-fns';
 import Divider from '@material-ui/core/Divider';
 import produce from 'immer';
 import emptyIcon from '../../images/empty.png';
-import {Code} from 'react-content-loader'
+import {Code} from 'react-content-loader';
+import {SwipeableList, SwipeableListItem} from '@sandstreamdev/react-swipeable-list';
+import '@sandstreamdev/react-swipeable-list/dist/styles.css';
+import {SwipeHint} from "../../components/SwipeHint";
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import {CSSTransition, TransitionGroup} from 'react-transition-group';
 
 const useStyles = makeStyles(theme => ({
   barRoot: {
@@ -78,7 +87,13 @@ const useStyles = makeStyles(theme => ({
   listRoot: {
     width: '100%',
   },
+  listItem: {
+    width: '100%',
+  },
 
+  finishedTask: {
+    textDecoration: 'line-through'
+  },
 
 
   fab: {
@@ -96,7 +111,9 @@ const TASKS_QUERY = gql`
     query {
         tasks {
             uuid
+            position
             name
+            isFinished
             createdAt
         }
     }
@@ -117,16 +134,25 @@ const taskReducer = (state, action) => {
   switch (action.type) {
     case 'SET_TASKS':
       return produce(state, draftState => {
-        // clean tasks list
-        while (draftState.length) {
-          draftState.pop();
-        }
-        // append each task
-        action.tasks.forEach(task => draftState.push(task))
+        draftState.data = action.tasks
+        draftState.loading = false
       })
     case 'APPEND_TASK':
       return produce(state, draftState => {
-        draftState.push(action.task)
+        draftState.data.push(action.task)
+      })
+    case 'REMOVE_TASK':
+      return produce(state, draftState => {
+        draftState.data = draftState.data.filter(task => task.uuid !== action.uuid)
+      })
+    case 'FINISH_TASK':
+      return produce(state, draftState => {
+        draftState.data.forEach(task => {
+          if(task.uuid === action.uuid)
+          {
+            task.isFinished = true
+          }
+        })
       })
     default:
       throw new Error('INVALID_ACTION')
@@ -147,7 +173,11 @@ export default function SearchAppBar() {
   //   })
   // }
 
-  const [tasks, dispatch] = useReducer(taskReducer, [0])
+  const [tasks, dispatch] = useReducer(taskReducer, {
+    loading: true,
+    data: [],
+    deletingUuids: []
+  })
 
   useQuery(TASKS_QUERY, {
       fetchPolicy: 'network-only',
@@ -211,22 +241,65 @@ export default function SearchAppBar() {
       </div>
 
 
-      {(tasks[0] !== 0) ?
-        (tasks.length > 0 ?
+      {(!tasks.loading) ?
+        (tasks.data.length > 0 ?
             (
               <List className={classes.listRoot}>
-                {tasks
-                  .filter(task => task.name.toLocaleLowerCase().indexOf(keyword.toLocaleLowerCase()) > -1)
-                  .map(task => (
-                    <React.Fragment key={task.uuid}>
-                      <SharedElement id={task.uuid}>
-                        <ListItem>
-                          <ListItemText primary={task.name} secondary={formatRelative(new Date(task.createdAt), now)} />
-                        </ListItem>
-                      </SharedElement>
-                      <Divider/>
-                    </React.Fragment>
-                ))}
+
+                <SwipeableList>
+                  <TransitionGroup>
+                  {tasks.data
+                    .filter(task => task.name.toLocaleLowerCase().indexOf(keyword.toLocaleLowerCase()) > -1)
+                    .map((task, index) => (
+                      <CSSTransition
+                        key={task.uuid}
+                        timeout={300}
+                        classNames="item"
+                      >
+                      <div key={task.uuid} className="item" style={{
+                        top: index * 73,
+                      }}>
+                        <SwipeableListItem
+                          swipeRight={{
+                            content: <SwipeHint variant="left" icon={<DoneIcon/>} label="Done" background="#357a38"/>,
+                            action: () => dispatch({
+                              type: 'FINISH_TASK',
+                              uuid: task.uuid
+                            })
+                          }}
+                          swipeLeft={{
+                            content: <SwipeHint variant="right" icon={<DeleteIcon/>} label="Delete" background="#ff1744"/>,
+                            action: () => dispatch({
+                              type: 'REMOVE_TASK',
+                              uuid: task.uuid
+                            })
+                          }}
+                        >
+                          <ListItem classes={{
+                            container: classes.listItem
+                          }}>
+                            <ListItemText className={task.isFinished ? classes.finishedTask : null} primary={task.name} secondary={formatRelative(new Date(task.createdAt), now)} />
+
+                            <ListItemSecondaryAction>
+                              <IconButton edge="end" onClick={() => dispatch({
+                                type: 'REMOVE_TASK',
+                                uuid: task.uuid
+                              })}>
+                                <ArrowUpwardIcon />
+                              </IconButton>
+                              <IconButton edge="end">
+                                <ArrowDownwardIcon />
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
+
+                        </SwipeableListItem>
+                        <Divider/>
+                      </div>
+                      </CSSTransition>
+                    ))}
+                  </TransitionGroup>
+                </SwipeableList>
               </List>
             )
             :

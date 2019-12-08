@@ -9,6 +9,7 @@ const storage = getStorage();
 // Create pubsub instance
 const pubsub = getPubSub();
 
+// const delay = (seconds) => new Promise(resolve => setTimeout(resolve, seconds * 1000))
 
 // Resolvers
 export default {
@@ -17,6 +18,7 @@ export default {
     // tasks resolver
     tasks: (root, args, context, info) => {
       // getting tasks from storage
+      // await delay(3)
       return storage.get('tasks')
     },
   },
@@ -52,13 +54,15 @@ export default {
       const newTask = {
         uuid: generateUuid(),
         name,
-        createdAt: new Date()
+        createdAt: new Date(),
+        isFinished: false
       }
 
       // get current tasks
       const tasks = storage.get('tasks')
 
       // persist new task
+      newTask.position = tasks.length
       tasks.push(newTask)
       storage.set('tasks', tasks)
 

@@ -13,6 +13,12 @@ type Task {
   # task name
   name: String
 
+  # task position
+  position: Int
+
+  # task state
+  isFinished: Boolean
+
   # task created time
   createdAt: DateTime
 }
