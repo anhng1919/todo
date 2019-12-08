@@ -86,6 +86,7 @@ const useStyles = makeStyles(theme => ({
 
   listRoot: {
     width: '100%',
+    height: '100vh'
   },
   listItem: {
     width: '100%',
