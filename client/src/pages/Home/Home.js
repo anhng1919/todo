@@ -144,16 +144,52 @@ const taskReducer = (state, action) => {
       })
     case 'REMOVE_TASK':
       return produce(state, draftState => {
+        const currentTask = draftState.data.find(task => task.uuid === action.uuid)
+
         draftState.data = draftState.data.filter(task => task.uuid !== action.uuid)
+
+        draftState.data
+          .filter(task => task.position > currentTask.position)
+          .forEach(task => {
+            task.position--
+          })
+
       })
     case 'FINISH_TASK':
       return produce(state, draftState => {
-        draftState.data.forEach(task => {
-          if(task.uuid === action.uuid)
-          {
-            task.isFinished = true
-          }
-        })
+        const currentTask = draftState.data.find(task => task.uuid === action.uuid)
+        currentTask.isFinished = true
+      })
+    case 'REDO_TASK':
+      return produce(state, draftState => {
+        const currentTask = draftState.data.find(task => task.uuid === action.uuid)
+        currentTask.isFinished = false
+      })
+    case 'MOVE_TASK_UP':
+      return produce(state, draftState => {
+        const currentTask = draftState.data.find(task => task.uuid === action.uuid)
+
+        draftState.data
+          .filter(task => task.position === currentTask.position - 1)
+          .forEach(task => {
+            task.position++
+          })
+
+        currentTask.position--
+
+      })
+    case 'MOVE_TASK_DOWN':
+      return produce(state, draftState => {
+        const currentTask = draftState.data.find(task => task.uuid === action.uuid)
+
+        draftState.data
+          .filter(task => task.position === currentTask.position + 1)
+          .forEach(task => {
+            task.position--
+          })
+
+        currentTask.position++
+
       })
     default:
       throw new Error('INVALID_ACTION')
@@ -207,6 +243,8 @@ export default function SearchAppBar() {
 
   const now = new Date()
 
+  // console.log(tasks.data)
+
   return (
     <div>
       <div className={classes.barRoot}>
@@ -254,20 +292,31 @@ export default function SearchAppBar() {
                     .map((task, index) => (
                       <CSSTransition
                         key={task.uuid}
-                        timeout={300}
+                        timeout={200}
                         classNames="item"
                       >
                       <div key={task.uuid} className="item" style={{
-                        top: index * 73,
+                        top: (keyword === '') ? task.position * 73 : index * 73,
                       }}>
                         <SwipeableListItem
-                          swipeRight={{
-                            content: <SwipeHint variant="left" icon={<DoneIcon/>} label="Done" background="#357a38"/>,
-                            action: () => dispatch({
-                              type: 'FINISH_TASK',
-                              uuid: task.uuid
-                            })
-                          }}
+                          swipeRight={
+                            task.isFinished ?
+                            {
+                              content: <SwipeHint variant="left" icon={<DoneIcon/>} label="Redo" background="#ffc107"/>,
+                              action: () => setTimeout(() => dispatch({
+                                type: 'REDO_TASK',
+                                uuid: task.uuid
+                              }), 500)
+                            }
+                            :
+                            {
+                              content: <SwipeHint variant="left" icon={<DoneIcon/>} label="Done" background="#357a38"/>,
+                              action: () => setTimeout(() => dispatch({
+                                type: 'FINISH_TASK',
+                                uuid: task.uuid
+                              }), 500)
+                            }
+                          }
                           swipeLeft={{
                             content: <SwipeHint variant="right" icon={<DeleteIcon/>} label="Delete" background="#ff1744"/>,
                             action: () => dispatch({
@@ -281,17 +330,22 @@ export default function SearchAppBar() {
                           }}>
                             <ListItemText className={task.isFinished ? classes.finishedTask : null} primary={task.name} secondary={formatRelative(new Date(task.createdAt), now)} />
 
-                            <ListItemSecondaryAction>
-                              <IconButton edge="end" onClick={() => dispatch({
-                                type: 'REMOVE_TASK',
-                                uuid: task.uuid
-                              })}>
-                                <ArrowUpwardIcon />
-                              </IconButton>
-                              <IconButton edge="end">
-                                <ArrowDownwardIcon />
-                              </IconButton>
-                            </ListItemSecondaryAction>
+                            {keyword === '' && (
+                              <ListItemSecondaryAction>
+                                <IconButton disabled={task.position === 0} edge="end" onClick={() => dispatch({
+                                  type: 'MOVE_TASK_UP',
+                                  uuid: task.uuid
+                                })}>
+                                  <ArrowUpwardIcon />
+                                </IconButton>
+                                <IconButton disabled={task.position === tasks.data.length - 1} edge="end" onClick={() => dispatch({
+                                  type: 'MOVE_TASK_DOWN',
+                                  uuid: task.uuid
+                                })}>
+                                  <ArrowDownwardIcon />
+                                </IconButton>
+                              </ListItemSecondaryAction>
+                            )}
                           </ListItem>
 
                         </SwipeableListItem>

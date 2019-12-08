@@ -2,7 +2,7 @@
   position: absolute;
   width: 100%;
   height: 73px;
-  transition: all 300ms ease-in;
+  transition: all 200ms ease-in;
 }
 .item-enter {
   opacity: 0;
