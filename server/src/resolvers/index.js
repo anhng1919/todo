@@ -71,6 +71,38 @@ export default {
         taskWasNoted: newTask
       })
       return true;
+    },
+    finishTask: (root, args, context, info) => {
+      const {uuid} = args
+
+      // get current tasks
+      const tasks = storage.get('tasks')
+
+      const currentTask = tasks.find(task => task.uuid === uuid)
+      currentTask.isFinished = true
+
+      storage.set('tasks', tasks)
+    },
+    redoTask: (root, args, context, info) => {
+      const {uuid} = args
+
+      // get current tasks
+      const tasks = storage.get('tasks')
+
+      const currentTask = tasks.find(task => task.uuid === uuid)
+      currentTask.isFinished = false
+
+      storage.set('tasks', tasks)
+    },
+    removeTask: (root, args, context, info) => {
+      const {uuid} = args
+
+      // get current tasks
+      const tasks = storage.get('tasks')
+
+      const newTasks = tasks.filter(task => task.uuid !== uuid)
+
+      storage.set('tasks', newTasks)
     }
   },
 
@@ -81,6 +113,18 @@ export default {
     taskWasNoted: {
       // connect to a pubsub iterator
       subscribe: () => pubsub.asyncIterator(['TASK_WAS_NOTED']),
-    }
+    },
+    taskWasFinished: {
+      // connect to a pubsub iterator
+      subscribe: () => pubsub.asyncIterator(['TASK_WAS_FINISHED']),
+    },
+    taskWasRequestedRedo: {
+      // connect to a pubsub iterator
+      subscribe: () => pubsub.asyncIterator(['TASK_WAS_REQUESTED_REDO']),
+    },
+    taskWasRemoved: {
+      // connect to a pubsub iterator
+      subscribe: () => pubsub.asyncIterator(['TASK_WAS_REMOVED']),
+    },
   }
 };

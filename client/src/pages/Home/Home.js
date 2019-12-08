@@ -134,6 +134,47 @@ const TASKS_SUBSCRIPTION = gql`
 const taskReducer = (state, action) => {
   switch (action.type) {
     case 'SET_TASKS':
+
+      // hints
+      if(!global.localStorage.getItem('hintIsShown'))
+      {
+        global.localStorage.setItem('hintIsShown', '1')
+
+        setTimeout(() => {
+          const leftHint = document.querySelector('div[data-testid=swipe-left-content]')
+          const rightHint = document.querySelector('div[data-testid=swipe-right-content]')
+          const content = document.querySelector('div[data-testid=content]')
+
+          if(content && leftHint && rightHint)
+          {
+            leftHint.style.transition = rightHint.style.transition = content.style.transition = 'transform 0.5s ease-out'
+
+
+            leftHint.style.opacity = 1
+            rightHint.style.opacity = 1
+            content.style.transform = 'translateX(90px)'
+
+            setTimeout(() => {
+              content.style.transform = 'translateX(0px)'
+
+              setTimeout(() => {
+                rightHint.style.opacity = 0
+                content.style.transform = 'translateX(-90px)'
+
+                setTimeout(() => {
+                  content.style.transform = 'translateX(0px)'
+                }, 1000)
+
+              }, 500)
+
+            }, 1000)
+
+          } else {
+            global.localStorage.removeItem('hintIsShown', '1')
+          }
+        }, 500)
+      }
+
       return produce(state, draftState => {
         draftState.data = action.tasks
         draftState.loading = false

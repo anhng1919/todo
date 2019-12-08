@@ -27,9 +27,27 @@ type Task {
  type Mutation {
    # write a new task to storage
    writeANewTask(name: String): Boolean
+
+   # finish the task
+   finishTask(uuid: String): Boolean
+
+   # redo the task
+   redoTask(uuid: String): Boolean
+
+   # remove the task
+   removeTask(uuid: String): Boolean
  }
 
  type Subscription {
-   # trigger event when task was noted
+   # trigger event when a task was noted
    taskWasNoted: Task
+
+   # trigger event when a task was finished
+   taskWasFinished: Task
+
+   # trigger event when a task was request redo again
+   taskWasRequestedRedo: Task
+
+   # trigger event when a task was removed
+   taskWasRemoved: Task
  }
